@@ -1,0 +1,93 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace ParliamentaryVoter.Domain.Common
+{
+    /// Base interface for all domain event handlers
+    public interface IDomainEventHandler
+    {
+        int Priority => 0;
+        bool CanExecuteInParallel => true;
+    }
+
+   
+    public interface IDomainEventHandler<in TDomainEvent> : IDomainEventHandler
+        where TDomainEvent : DomainEvent
+    {
+        Task HandleAsync(TDomainEvent domainEvent, CancellationToken cancellationToken = default);
+    }
+
+    public abstract class DomainEventHandlerBase<TDomainEvent> : IDomainEventHandler<TDomainEvent>
+        where TDomainEvent : DomainEvent
+    {
+        public virtual int Priority => 0;
+        public virtual bool CanExecuteInParallel => true;
+
+        public async Task HandleAsync(TDomainEvent domainEvent, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                await OnHandleAsync(domainEvent, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await OnHandleErrorAsync(domainEvent, ex, cancellationToken);
+                throw; // Re-throw to maintain error handling chain
+            }
+        }
+
+       
+        protected abstract Task OnHandleAsync(TDomainEvent domainEvent, CancellationToken cancellationToken);
+
+       
+        protected virtual Task OnHandleErrorAsync(
+            TDomainEvent domainEvent, 
+            Exception exception, 
+            CancellationToken cancellationToken)
+        {
+            // Default implementation does nothing
+            // Override in derived classes to implement logging or other error handling
+            return Task.CompletedTask;
+        }
+
+        protected virtual bool ValidateEvent(TDomainEvent domainEvent)
+        {
+            return domainEvent != null && 
+                   domainEvent.AggregateId != Guid.Empty && 
+                   !string.IsNullOrWhiteSpace(domainEvent.AggregateType);
+        }
+
+        protected virtual bool ShouldHandle(TDomainEvent domainEvent)
+        {
+            return ValidateEvent(domainEvent);
+        }
+    }
+
+
+    public interface IDomainEventDispatcher
+    {
+       
+        Task DispatchAsync(DomainEvent domainEvent, CancellationToken cancellationToken = default);
+
+        
+        Task DispatchAsync(DomainEvent[] domainEvents, CancellationToken cancellationToken = default);
+    }
+
+   
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class DomainEventHandlerAttribute : Attribute
+    {
+        
+        public int Priority { get; set; } = 0;
+        public bool CanExecuteInParallel { get; set; } = true;
+        public string? Name { get; set; }
+
+        public DomainEventHandlerAttribute(int priority = 0, bool canExecuteInParallel = true, string? name = null)
+        {
+            Priority = priority;
+            CanExecuteInParallel = canExecuteInParallel;
+            Name = name;
+        }
+    }
+}
