@@ -37,9 +37,7 @@ namespace ParliamentaryVoter.Domain.Aggregates.UserAggregate
         public string? PhoneNumber { get; private set; }
         public string? AvatarUrl { get; private set; }
         public bool EmailNotificationsEnabled { get; private set; }
-        public bool SmsNotificationsEnabled { get; private set; }
         public List<string> PoliticalInterests { get; private set; }
-        public VotingReminderFrequency VotingReminderFrequency { get; private set; }
         public bool PublicVotingHistory { get; private set; }
         public string TimeZone { get; private set; }
 
@@ -47,7 +45,6 @@ namespace ParliamentaryVoter.Domain.Aggregates.UserAggregate
         {
             PoliticalInterests = new List<string>();
             TimeZone = "America/Toronto"; // Default to Eastern Time
-            VotingReminderFrequency = VotingReminderFrequency.Weekly;
         }
 
         public static UserProfile Create(
@@ -76,7 +73,6 @@ namespace ParliamentaryVoter.Domain.Aggregates.UserAggregate
                 LastName = lastName.Trim(),
                 Province = province,
                 EmailNotificationsEnabled = true, // Default to enabled
-                SmsNotificationsEnabled = false,  // Default to disabled
                 PublicVotingHistory = false,      // Default to private
                 PoliticalInterests = new List<string>(),
                 TimeZone = GetDefaultTimeZoneForProvince(province)
@@ -118,13 +114,9 @@ namespace ParliamentaryVoter.Domain.Aggregates.UserAggregate
         }
 
         public void UpdateNotificationPreferences(
-            bool emailNotifications,
-            bool smsNotifications,
-            VotingReminderFrequency votingReminderFrequency)
+            bool emailNotifications)
         {
             EmailNotificationsEnabled = emailNotifications;
-            SmsNotificationsEnabled = smsNotifications;
-            VotingReminderFrequency = votingReminderFrequency;
             
             MarkAsUpdated();
         }
@@ -199,15 +191,5 @@ namespace ParliamentaryVoter.Domain.Aggregates.UserAggregate
                    Province != null &&
                    (Age == null || Age >= 18); // If age is unknown, allow voting (will be checked elsewhere)
         }
-    }
-
-
-    public enum VotingReminderFrequency
-    {
-        Never = 0,
-        Daily = 1,
-        Weekly = 2,
-        Monthly = 3,
-        OnNewBillsOnly = 4
     }
 }

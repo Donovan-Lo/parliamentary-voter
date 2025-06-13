@@ -69,12 +69,6 @@ namespace ParliamentaryVoter.Domain.Common
             MarkAsUpdated(restoredBy);
         }
 
-        protected void SetCreationMetadata(Guid? createdBy, DateTime createdAt)
-        {
-            CreatedBy = createdBy;
-            CreatedAt = createdAt;
-        }
-
         public override bool Equals(object? obj)
         {
             if (obj is not BaseEntity other)
@@ -99,20 +93,5 @@ namespace ParliamentaryVoter.Domain.Common
             return Id.GetHashCode();
         }
 
-
-        public static bool operator ==(BaseEntity? left, BaseEntity? right)
-        {
-            return left?.Equals(right) ?? right is null;
-        }
-
-        public static bool operator !=(BaseEntity? left, BaseEntity? right)
-        {
-            return !(left == right);
-        }
-
-        public override string ToString()
-        {
-            return $"{GetType().Name} [Id: {Id}]";
-        }
     }
 }

@@ -37,20 +37,6 @@ namespace ParliamentaryVoter.Domain.Aggregates.UserAggregate
             return province;
         }
 
-        public static Province CreateByName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Province name cannot be null or empty", nameof(name));
-
-            var province = CanadianProvinces.FirstOrDefault(p => 
-                p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-            
-            if (province == null)
-                throw new ArgumentException($"Invalid province name: {name}", nameof(name));
-
-            return province;
-        }
-
         public static bool IsValidCode(string code)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -100,25 +86,9 @@ namespace ParliamentaryVoter.Domain.Aggregates.UserAggregate
             new Province("YT", "Yukon", "Territory", 42_000, "Whitehorse")
         };
 
-        protected override IEnumerable<object> GetEqualityComponents()
-        {
-            yield return Code;
-            yield return Country;
-        }
-
         public override string ToString()
         {
             return $"{Name} ({Code})";
-        }
-
-        public static implicit operator Province(string code)
-        {
-            return Create(code);
-        }
-
-        public static implicit operator string(Province province)
-        {
-            return province?.Code ?? string.Empty;
         }
     }
 
